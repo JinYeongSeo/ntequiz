@@ -6,6 +6,7 @@
     <title>이환 맞추기</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
     <script defer src="/_vercel/insights/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; user-select: none; }
@@ -258,7 +259,12 @@
         <button class="btn" style="margin-top: 30px;" onclick="showScreen('screen-menu'); renderLeaderboard();">메인으로</button>
     </div>
 
+
     <script>
+        // Supabase 초기화 (네 키 넣어라)
+        const supabase = supabase.createClient('https://pgznsqjsazczbnlnksvq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnem5zcWpzYXpjemJubG5rc3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzAwMzcsImV4cCI6MjA5NTIwNjAzN30.oncTYNKnY6J_Z6T-Sr42wG07DElfhY-Qlyv7hJ6ipJU');
+
+        // 데이터 
         const rawTSV = `
 1	이 음식의 가격은?	ponz.png	900 폰즈		ponz.png	1050 폰즈		pukacho.png	1
 2	이 음식의 가격은?	ponz.png	660 폰즈		ponz.png	600 폰즈		pukasom.png	0
@@ -468,34 +474,32 @@
 206	리퀴드 드림 캔	aaa4.png			aaa3.png				1
 207	스페셜 냉디저트	aaa5.png			aaa1.png				0
         `;
+ 
 
+        // [데이터 처리 로직]
         function parseTSV(tsv) {
             const lines = tsv.trim().split('\n');
             return lines.map(line => {
                 const cols = line.split('\t').map(c => c ? c.trim() : '');
                 if (cols.length < 10) return null; 
                 
-                // 데이터 보정: 제목 칸에 .png/.jpg가 들어간 경우 이미지 칸으로 자동 이동
-                if (cols[3] && (cols[3].endsWith('.png') || cols[3].endsWith('.jpg')) && !cols[2]) {
-                    cols[2] = cols[3]; cols[3] = '';
-                }
-                if (cols[6] && (cols[6].endsWith('.png') || cols[6].endsWith('.jpg')) && !cols[5]) {
-                    cols[5] = cols[6]; cols[6] = '';
-                }
+                // 이미지 자동 보정
+                const fixImg = (colImg, colTitle) => {
+                    if (colTitle.match(/\.(png|jpg)$/)) return colTitle;
+                    return colImg;
+                };
 
                 return {
-                    id: cols[0],
-                    question: cols[1],
-                    left: { img: cols[2], title: cols[3], sub: cols[4] },
-                    right: { img: cols[5], title: cols[6], sub: cols[7] },
-                    center_img: cols[8],
-                    answer: parseInt(cols[9], 10)
+                    id: cols[0], question: cols[1],
+                    left: { img: fixImg(cols[2], cols[3]), title: fixImg(cols[2], cols[3]) === cols[3] ? '' : cols[3] },
+                    right: { img: fixImg(cols[5], cols[6]), title: fixImg(cols[5], cols[6]) === cols[6] ? '' : cols[6] },
+                    center_img: cols[8], answer: parseInt(cols[9], 10)
                 };
-            }).filter(q => q && q.id && !isNaN(q.answer));
+            }).filter(q => q && q.id);
         }
 
         const quizDB = parseTSV(rawTSV);
-
+      
         let currentMode = 'normal';
         let currentQuizList = [];
         let currentIndex = 0;
