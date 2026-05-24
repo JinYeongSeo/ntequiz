@@ -6,15 +6,15 @@
     <title>이환 맞추기</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
     <script defer src="/_vercel/insights/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; user-select: none; }
-        body { background: #0a0a0a; color: #fff; overflow: hidden; } /* 퓨어 다크 배경 */
+        body { background: #0a0a0a; color: #fff; overflow: hidden; } 
 
         .screen { display: none; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 10; background: #0a0a0a; }
         .active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-        /* 폴백(Fallback) 배경 - 흐리게 */
         #screen-menu, #screen-end {
             background-color: #0a0a0a;
             background-image: url('images/pc.jpg');
@@ -24,7 +24,6 @@
             #screen-menu, #screen-end { background-image: url('images/mobile.jpg'); }
         }
 
-        /* 그라데이션 뺀 트렌디한 솔리드 글래스 버튼 */
         .btn { 
             background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1); color: #fff; 
@@ -62,10 +61,9 @@
         }
 
         .split-container { display: flex; width: 100vw; height: 100vh; flex-direction: row; }
-        .panel { flex: 1; position: relative; background-size: contain; background-position: center; background-repeat: no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.05); background-color: #0a0a0a; }
-        .panel:last-child { border-right: none; }
+        /* 패널 사이 테두리 선 삭제 (border: none;) */
+        .panel { flex: 1; position: relative; background-size: contain; background-position: center; background-repeat: no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; cursor: pointer; border: none; background-color: #0a0a0a; }
 
-        /* 패널 다크 오버레이 */
         .panel::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 2; transition: background 0.3s; }
         .panel-fallback { background-image: url('images/pc.jpg'); background-size: cover !important; background-position: center !important; }
         @media screen and (max-width: 768px) { .panel-fallback { background-image: url('images/mobile.jpg'); } }
@@ -89,7 +87,6 @@
 
         .item-sub { font-size: 1.4rem; color: #888; margin-top: 15px; font-weight: 700; }
 
-        /* 중앙 박스 살짝 더 키움 */
         .vs-badge { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             width: clamp(280px, 28vw, 420px); height: clamp(280px, 28vw, 420px); 
@@ -114,7 +111,6 @@
         }
         .shake-anim { animation: shake 0.35s; }
 
-        /* 리더보드 (플랫 디자인) */
         .board-container { display: flex; gap: 30px; margin-top: 20px; max-height: 60vh; overflow-y: auto; padding-right: 10px; }
         .board-container::-webkit-scrollbar { width: 6px; }
         .board-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -124,7 +120,6 @@
         .rank-row:last-child { border: none; }
         .rank-num { color: #fff; font-weight: 900; width: 40px; }
 
-        /* 오답노트 모달 */
         #screen-review { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(6px); }
         #screen-review.active { display: flex; }
         .review-modal { width: 90%; max-width: 900px; background: rgba(15, 15, 15, 0.95); border-radius: 24px; padding: 35px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
@@ -141,17 +136,15 @@
         .review-center img { max-width: 250px; max-height: 250px; border-radius: 16px; object-fit: contain; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); padding: 10px; }
         .choice-wrapper { display: flex; align-items: center; font-weight: bold; color: #fff; }
 
-        /* 📱 모바일 최적화 (세로 모드 상하 스플릿) */
         @media screen and (max-width: 768px) {
             .title { font-size: 2.8rem; }
+            .btn { font-size: 1rem; padding: 12px 25px; }
             .question-bar { font-size: 1.4rem; top: 12vh; padding: 12px 25px; }
             
-            /* 상하 배치로 변경 */
             .split-container { flex-direction: column; }
-            .panel { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-            .panel:last-child { border-bottom: none; }
+            /* 모바일 가로선 삭제 */
+            .panel { border: none; } 
             
-            /* 텍스트 박스 위치 조정 */
             .panel-content { max-width: 85vw; }
             #panel-left .panel-content { transform: translateY(-10vh) translateX(0); }
             #panel-right .panel-content { transform: translateY(10vh) translateX(0); }
@@ -266,10 +259,12 @@
         <button class="btn" style="margin-top: 30px;" onclick="showScreen('screen-menu'); renderLeaderboard();">메인으로</button>
     </div>
 
+
     <script>
-        // ================================================================
-        // 🔥 TSV 데이터 (aa1.png 등 탭 밀림 오류 자체 수정 적용됨) 🔥
-        // ================================================================
+        // Supabase 초기화 (네 키 넣어라)
+        const supabase = supabase.createClient('https://pgznsqjsazczbnlnksvq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnem5zcWpzYXpjemJubG5rc3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzAwMzcsImV4cCI6MjA5NTIwNjAzN30.oncTYNKnY6J_Z6T-Sr42wG07DElfhY-Qlyv7hJ6ipJU');
+
+        // 데이터 
         const rawTSV = `
 1	이 음식의 가격은?	ponz.png	900 폰즈		ponz.png	1050 폰즈		pukacho.png	1
 2	이 음식의 가격은?	ponz.png	660 폰즈		ponz.png	600 폰즈		pukasom.png	0
@@ -479,34 +474,32 @@
 206	리퀴드 드림 캔	aaa4.png			aaa3.png				1
 207	스페셜 냉디저트	aaa5.png			aaa1.png				0
         `;
+ 
 
+        // [데이터 처리 로직]
         function parseTSV(tsv) {
             const lines = tsv.trim().split('\n');
             return lines.map(line => {
                 const cols = line.split('\t').map(c => c ? c.trim() : '');
                 if (cols.length < 10) return null; 
                 
-                // 데이터 보정: 제목 칸에 .png/.jpg가 들어간 경우 이미지 칸으로 자동 이동
-                if (cols[3] && (cols[3].endsWith('.png') || cols[3].endsWith('.jpg')) && !cols[2]) {
-                    cols[2] = cols[3]; cols[3] = '';
-                }
-                if (cols[6] && (cols[6].endsWith('.png') || cols[6].endsWith('.jpg')) && !cols[5]) {
-                    cols[5] = cols[6]; cols[6] = '';
-                }
+                // 이미지 자동 보정
+                const fixImg = (colImg, colTitle) => {
+                    if (colTitle.match(/\.(png|jpg)$/)) return colTitle;
+                    return colImg;
+                };
 
                 return {
-                    id: cols[0],
-                    question: cols[1],
-                    left: { img: cols[2], title: cols[3], sub: cols[4] },
-                    right: { img: cols[5], title: cols[6], sub: cols[7] },
-                    center_img: cols[8],
-                    answer: parseInt(cols[9], 10)
+                    id: cols[0], question: cols[1],
+                    left: { img: fixImg(cols[2], cols[3]), title: fixImg(cols[2], cols[3]) === cols[3] ? '' : cols[3] },
+                    right: { img: fixImg(cols[5], cols[6]), title: fixImg(cols[5], cols[6]) === cols[6] ? '' : cols[6] },
+                    center_img: cols[8], answer: parseInt(cols[9], 10)
                 };
-            }).filter(q => q && q.id && !isNaN(q.answer));
+            }).filter(q => q && q.id);
         }
 
         const quizDB = parseTSV(rawTSV);
-
+      
         let currentMode = 'normal';
         let currentQuizList = [];
         let currentIndex = 0;
@@ -518,6 +511,7 @@
 
         window.onload = () => { 
             renderLeaderboard(); 
+            // 모달 배경 클릭 시 닫기 이벤트 추가
             document.getElementById('screen-review').addEventListener('click', function(e) {
                 if (e.target === this) {
                     showScreen('screen-end');
@@ -606,7 +600,7 @@
                 pLeft.style.backgroundImage = `url('${leftImgPath}')`;
                 pLeft.classList.remove('panel-fallback');
             } else {
-                pLeft.style.backgroundImage = '';
+                pLeft.style.backgroundImage = 'none';
                 pLeft.classList.add('panel-fallback'); 
             }
             const leftTitleContent = q.left.title ? `<div class="text-plate">${getPonzHTML(q.left.title)}</div>` : '';
@@ -619,7 +613,7 @@
                 pRight.style.backgroundImage = `url('${rightImgPath}')`;
                 pRight.classList.remove('panel-fallback');
             } else {
-                pRight.style.backgroundImage = '';
+                pRight.style.backgroundImage = 'none';
                 pRight.classList.add('panel-fallback');
             }
             const rightTitleContent = q.right.title ? `<div class="text-plate">${getPonzHTML(q.right.title)}</div>` : '';
@@ -647,7 +641,11 @@
             
             gameHistory.push({ quiz: q, selected: selectedIndex, isCorrect: isCorrect });
             
-            if(isCorrect) score += 1;
+            if(isCorrect) {
+                score += 1;
+            } else if (currentMode === 'time') {
+                score -= 1;
+            }
             document.getElementById('score-display').innerText = score;
 
             const flash = document.getElementById('effect-overlay');
