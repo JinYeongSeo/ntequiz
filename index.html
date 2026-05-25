@@ -64,7 +64,17 @@
         }
 
         .split-container { display: flex; width: 100vw; height: 100vh; flex-direction: row; }
-        .panel { flex: 1; position: relative; background-size: contain; background-position: center; background-repeat: no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; cursor: pointer; border: none; background-color: #0a0a0a; }
+        .panel { 
+    flex: 1; position: relative; 
+    background-size: contain; /* 기본은 contain */
+    background-position: center; 
+    background-repeat: no-repeat; 
+    display: flex; flex-direction: column; 
+    align-items: center; justify-content: center; 
+    transition: all 0.3s; cursor: pointer; 
+    border: none; 
+    background-color: transparent; /* 검은색 배경을 투명으로 변경 */
+}
 
         .panel::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 2; transition: background 0.3s; }
         .panel-fallback { background-image: url('images/pc.jpg'); background-size: cover !important; background-position: center !important; }
@@ -72,8 +82,12 @@
         .panel.panel-fallback::before { background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); }
         
         .panel:hover::before { background: rgba(0,0,0,0.3); }
-        .panel.panel-fallback:hover::before { background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
-
+        .panel-fallback { 
+    background-image: url('images/pc.jpg'); 
+    background-size: cover !important; /* 여기를 cover로 확실히 지정 */
+    background-position: center !important; 
+    background-color: #000 !important; /* 이미지 로딩 전 검은 배경 */
+}
         .panel-content { position: relative; z-index: 5; text-align: center; pointer-events: none; max-width: 40vw; }
         #panel-left .panel-content { transform: translateX(-12vw); }
         #panel-right .panel-content { transform: translateX(12vw); }
