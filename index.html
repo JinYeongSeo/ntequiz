@@ -616,7 +616,7 @@
                 pLeft.style.backgroundImage = `url('${leftImgPath}')`;
                 pLeft.classList.remove('panel-fallback');
             } else {
-                pLeft.style.backgroundImage = 'none';
+                pLeft.style.backgroundImage = '';
                 pLeft.classList.add('panel-fallback'); 
             }
             const leftTitleContent = q.left.title ? `<div class="text-plate">${getPonzHTML(q.left.title)}</div>` : '';
