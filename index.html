@@ -12,7 +12,6 @@
 
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        /* -webkit-tap-highlight-color: transparent 추가 -> 모바일 터치 시 번쩍이는 파란/회색 잔상 완벽 제거 */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: #0a0a0a; color: #fff; overflow: hidden; } 
 
@@ -82,7 +81,6 @@
         @media screen and (max-width: 768px) { .panel-fallback { background-image: url('images/mobile.jpg'); } }
         .panel.panel-fallback::before { background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); }
         
-        /* 🔥 Sticky Hover 버그 픽스: 마우스를 쓰는 기기(PC)에서만 호버 효과가 먹히도록 미디어 쿼리 제한 */
         @media (hover: hover) and (pointer: fine) {
             .panel:hover::before { background: rgba(0,0,0,0.3); }
             .panel.panel-fallback:hover::before { background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
@@ -120,11 +118,26 @@
         .flash-correct { background: rgba(76, 175, 80, 0.1); }
         .flash-wrong { background: rgba(244, 67, 54, 0.15); }
 
-        .board-container { display: flex; gap: 30px; margin-top: 20px; max-height: 65vh; overflow-y: auto; padding-right: 10px; align-items: flex-start; }
-        .board-container::-webkit-scrollbar { width: 6px; }
-        .board-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        .board { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px); padding: 25px; border-radius: 20px; min-width: 320px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .board h2 { text-align: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; color: #fff; font-weight: 800; font-size: 1.5rem; }
+        /* 🔥 랭킹 시스템 레이아웃 완전 재수정 (독립 스크롤) 🔥 */
+        .board-container { 
+            display: flex; gap: 30px; margin-top: 20px; 
+            width: 90%; max-width: 900px; height: 65vh; 
+        }
+        .board { 
+            flex: 1; display: flex; flex-direction: column; overflow: hidden;
+            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px); 
+            padding: 20px 25px; border-radius: 20px; min-width: 0; 
+            border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        .board h2 { 
+            text-align: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 15px; color: #fff; font-weight: 800; font-size: 1.5rem; flex-shrink: 0;
+        }
+        
+        #list-normal, #list-time { flex: 1; overflow-y: auto; padding-right: 10px; }
+        #list-normal::-webkit-scrollbar, #list-time::-webkit-scrollbar { width: 6px; }
+        #list-normal::-webkit-scrollbar-thumb, #list-time::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
         .rank-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 1.1rem; font-weight: 600; color: #ccc; }
         .rank-row:last-child { border: none; }
         .rank-num { color: #fff; font-weight: 900; width: 40px; }
@@ -162,8 +175,14 @@
             .vs-badge { width: 110px; height: 110px; padding: 5px; border-radius: 12px; }
             #effect-icon { font-size: 4rem; }
             
-            .board-container { flex-direction: column; align-items: center; max-height: 60vh; }
-            .board { width: 100%; min-width: unset; margin-bottom: 20px; }
+            /* 🔥 모바일 랭킹 레이아웃 (반반 나눠서 독립 스크롤 되게) */
+            #screen-leaderboard .title { font-size: 2.2rem; margin-bottom: 10px; }
+            .board-container { flex-direction: column; height: 65vh; width: 95%; gap: 15px; margin-top: 10px; }
+            .board { padding: 15px; width: 100%; border-radius: 16px; }
+            .board h2 { font-size: 1.2rem; margin-bottom: 10px; padding-bottom: 8px; }
+            .rank-row { font-size: 0.95rem; padding: 8px 0; }
+            #screen-leaderboard .btn { margin-top: 15px !important; }
+            
             .mini-board { width: 100%; }
         }
     </style>
@@ -256,7 +275,7 @@
     </div>
 
     <div id="screen-leaderboard" class="screen">
-        <div class="title" style="font-size: 3rem;">TOP 50</div>
+        <div class="title">TOP 50</div>
         <div class="board-container">
             <div class="board">
                 <h2>일반 모드</h2>
@@ -267,7 +286,7 @@
                 <div id="list-time">기록이 없습니다.</div>
             </div>
         </div>
-        <button class="btn" style="margin-top: 30px;" onclick="showScreen('screen-menu'); renderLeaderboard();">메인으로</button>
+        <button class="btn" style="margin-top: 20px;" onclick="showScreen('screen-menu'); renderLeaderboard();">메인으로</button>
     </div>
 
     <script>
