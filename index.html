@@ -162,13 +162,17 @@
             
             /* 좌우 스플릿 유지 */
             .split-container { flex-direction: row; } 
+            .panel { border: none; }
             
-            .panel-content { max-width: 45vw; }
-            #panel-left .panel-content { transform: translateX(-5vw); }
-            #panel-right .panel-content { transform: translateX(5vw); }
-            
+            .panel-content { 
+        width: 45vw; /* 좌우 텍스트 영역을 화면 절반 이하로 확실히 제한 */
+        transform: none !important; /* 가운데 정렬 방해하는 transform 제거 */
+    }
             /* 선택지 작게, 여러 줄 */
-            .text-plate { font-size: 1.1rem; padding: 10px; gap: 8px; border-radius: 12px; }
+            .text-plate { 
+        font-size: 0.9rem; /* 글자 크기를 줄여서 박스 안에 들어가게 함 */
+        padding: 8px; 
+    }
             .ponz-icon { height: 25px; width: 25px; }
             .vs-badge { width: 110px; height: 110px; padding: 5px; border-radius: 12px; }
             #effect-icon { font-size: 4rem; }
@@ -663,49 +667,56 @@
         }
 
         function checkAnswer(selectedIndex) {
-            if(isProcessing) return;
-            isProcessing = true;
+    if(isProcessing) return;
+    isProcessing = true;
 
-            const q = currentQuizList[currentIndex];
-            const isCorrect = (selectedIndex === q.answer);
-            
-            gameHistory.push({ quiz: q, selected: selectedIndex, isCorrect: isCorrect });
-            
-            if(isCorrect) {
-                score += 1;
-            } else if (currentMode === 'time') {
-                score -= 1;
-            }
-            document.getElementById('score-display').innerText = score;
+    // 포커스 강제 해제로 버튼 클릭 잔상 방지
+    document.activeElement.blur();
 
-            const flash = document.getElementById('effect-overlay');
-            const icon = document.getElementById('effect-icon');
-            const gameScreen = document.getElementById('game-screen');
+    const q = currentQuizList[currentIndex];
+    const isCorrect = (selectedIndex === q.answer);
+    
+    gameHistory.push({ quiz: q, selected: selectedIndex, isCorrect: isCorrect });
+    
+    // 점수 로직: 정답시 +1, 타임어택 틀릴 시 -1
+    if(isCorrect) {
+        score += 1;
+    } else if (currentMode === 'time') {
+        score -= 1;
+    }
+    document.getElementById('score-display').innerText = score;
 
-            if (isCorrect) {
-                flash.className = 'flash-correct';
-                icon.innerText = '정답';
-                icon.style.color = '#4CAF50';
-            } else {
-                flash.className = 'flash-wrong';
-                icon.innerText = '오답';
-                icon.style.color = '#f44336';
-                gameScreen.classList.add('shake-anim');
-            }
+    const flash = document.getElementById('effect-overlay');
+    const icon = document.getElementById('effect-icon');
 
-            flash.style.opacity = '1';
-            icon.style.transform = 'scale(1)';
+    // 이펙트 렌더링 (화면 흔들림 효과 제거됨)
+    if (isCorrect) {
+        flash.className = 'flash-correct';
+        icon.innerText = '정답';
+        icon.style.color = '#4CAF50';
+    } else {
+        flash.className = 'flash-wrong';
+        icon.innerText = '오답';
+        icon.style.color = '#f44336';
+        // gameScreen.classList.add('shake-anim'); // 흔들림 효과 삭제
+    }
 
-            setTimeout(() => {
-                flash.style.opacity = '0';
-                icon.style.transform = 'scale(0.5)';
-                setTimeout(() => {
-                    gameScreen.classList.remove('shake-anim');
-                    currentIndex++; 
-                    loadQuiz();
-                }, 200);
-            }, 500);
-        }
+    flash.style.opacity = '1';
+    icon.style.transform = 'scale(1)';
+
+    // 시간 간격 조절 (좀 더 빠르게 넘어가도록)
+    setTimeout(() => {
+        flash.style.opacity = '0';
+        icon.style.transform = 'scale(0.5)';
+        
+        // 잔상 초기화를 위해 추가적인 처리
+        setTimeout(() => {
+            currentIndex++; 
+            loadQuiz();
+            isProcessing = false; // 여기서 처리 완료
+        }, 150);
+    }, 300); // 500ms에서 300ms로 단축
+}
 
         function endGame() {
             clearInterval(timerInterval);
